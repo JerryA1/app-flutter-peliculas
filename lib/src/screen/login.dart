@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:practica2/src/api/login.dart';
+import 'package:practica2/src/models/userDao.dart';
 import 'package:practica2/src/screen/dashboard.dart';
 
 class Login extends StatefulWidget {
@@ -9,9 +11,15 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  ApiLogin httpLogin = ApiLogin();
+  bool isValidating = false; //Variable para controlar la visualizacion del indicador del progreso
+
   @override
   Widget build(BuildContext context) {
+    TextEditingController txtUser = TextEditingController();
+    TextEditingController txtPwd = TextEditingController();
     final txtEmail = TextFormField(
+      controller: txtUser,
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         hintText: 'Email',
@@ -23,6 +31,7 @@ class _LoginState extends State<Login> {
     );
 
     final txtPass = TextFormField(
+      controller: txtPwd,
       keyboardType: TextInputType.text,
       obscureText: true,
       decoration: InputDecoration(
@@ -40,8 +49,31 @@ class _LoginState extends State<Login> {
       ),
       child: Text('Entrar', style: TextStyle(color: Colors.white),),
       color: Colors.lightBlue,
-      onPressed: (){
-        Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
+      onPressed: () async{
+        UserDAO objUser = UserDAO(username: txtUser.text, pwduser: txtPwd.text);
+        httpLogin.validateUser(objUser).then((token){
+          print(token);
+          if(token != null){
+            isValidating = true;
+            Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
+          } else{
+            showDialog(
+              context: context,
+              builder: (BuildContext context){
+                return AlertDialog(
+                  title: Text('Error:'),
+                  content: Text('Credentials are incorrect'),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('Close'),
+                      onPressed: () => Navigator.of(context).pop(),
+                    )
+                  ],
+                );
+              }
+            );
+          }
+        });        
       }
     );
 
@@ -83,7 +115,7 @@ class _LoginState extends State<Login> {
          ),
          Positioned(
            top: 380,
-           child: CircularProgressIndicator(),
+           child: isValidating ? CircularProgressIndicator() : Container(),
          )
        ],
     );
