@@ -1,12 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:practica2/src/assets/configuration.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class Dashboard extends StatelessWidget {
-  const Dashboard({Key key}) : super(key: key);
+class Dashboard extends StatefulWidget {
+  Dashboard({Key key}) : super(key: key);
 
   @override
+  _DashboardState createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  SharedPreferences loginData;
+  String username;
+  String tokenSesion;
+
+  @override
+  void initState() {
+    super.initState();
+    initial();
+  }
+
+  void initial() async {
+    loginData = await SharedPreferences.getInstance();
+    setState(() {
+      username = loginData.getString('username');
+      tokenSesion = loginData.getString('token');
+    });
+  }
+  
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    return Container(      
       child: Scaffold(        
         appBar: AppBar(
           backgroundColor: Configuration.colorApp,
@@ -23,7 +47,7 @@ class Dashboard extends StatelessWidget {
                   backgroundImage: NetworkImage('https://villasmilindovillas.com/wp-content/uploads/2020/01/Profile.png'),
                 ),
                 accountName: Text('Jerry Almanza'), 
-                accountEmail: Text('15030141@itcelaya.edu.mx'),
+                accountEmail: Text('$username'),
                 onDetailsPressed: (){
                   Navigator.pop(context);
                   Navigator.pushNamed(context, '/profile');
@@ -56,7 +80,14 @@ class Dashboard extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.exit_to_app, color: Configuration.colorItem,),
                 title: Text('Sign out'),
-                onTap: (){},
+                onTap: (){
+                  print(tokenSesion);
+                  loginData.setBool('login', true);
+                  loginData.setString('username', '');
+                  loginData.setString('token', '');
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/login');
+                },
               )
             ],
           ),
