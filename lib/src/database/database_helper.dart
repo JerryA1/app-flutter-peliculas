@@ -50,7 +50,7 @@ class DataBaseHelper {
   Future<UserDAO> getUsuario(String email) async{
     var dbClient = await database;
     var result = await dbClient.query('tbl_perfil', where: 'emailUser = ?', whereArgs: [email]);
-    var lista = (result).map((item) => UserDAO.fromJSON).toList();
+    var lista = (result).map((item) => UserDAO.fromJSON(item)).toList();
     return lista[0];
   }
 }
