@@ -1,13 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:practica2/src/assets/configuration.dart';
+import 'package:image_picker/image_picker.dart';
 
-class Profile extends StatelessWidget {
-  const Profile({Key key}) : super(key: key);
+class Profile extends StatefulWidget {
+  Profile({Key key}) : super(key: key);
 
+  @override
+  _ProfileState createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Scaffold(
+       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Configuration.colorApp,
           title: Text('Peliculas'),
@@ -22,6 +30,11 @@ class Profile extends StatelessWidget {
     TextEditingController nameController = TextEditingController()..text = 'Gerardo Almanza';
     TextEditingController emailController = TextEditingController()..text = '15030141@itcelaya.edu.mx';
     TextEditingController telController = TextEditingController()..text = '4111525280';
+
+    final picker = ImagePicker();
+    String imagePath = "";
+  
+
     final txtName = TextFormField(
       keyboardType: TextInputType.emailAddress,
       cursorColor: Colors.white,
@@ -137,11 +150,28 @@ class Profile extends StatelessWidget {
           ),
         ],
       ),
-      onPressed: () {
+      onPressed: () async{
+        final pickedFile = await picker.getImage(source: ImageSource.camera);
+        imagePath = pickedFile.path;
+        setState(() {
+          
+        });
       },
     );
-
+    
+    final imgFinal = imagePath == "" 
+      ? CircleAvatar(
+          radius: 70,
+          backgroundImage: NetworkImage('https://villasmilindovillas.com/wp-content/uploads/2020/01/Profile.png'),
+        )
+      : ClipOval(
+          child: Image.file(
+            File(imagePath),
+            fit: BoxFit.cover
+          )
+        );
     return Column(
+      
       children: <Widget>[
         Padding(
           padding: EdgeInsets.fromLTRB(30, 50, 30, 30),
@@ -158,10 +188,7 @@ class Profile extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(0, 0,0 ,50),
           child: Stack(
             children: <Widget>[
-              CircleAvatar(
-                radius: 70,
-                backgroundImage: NetworkImage('https://villasmilindovillas.com/wp-content/uploads/2020/01/Profile.png'),
-              ),
+              imgFinal,
               Positioned(bottom: 1, right: 1 ,child: Container(
                 height: 40, width: 40,
                 child: photoBtn,

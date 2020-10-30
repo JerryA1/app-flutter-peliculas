@@ -31,7 +31,7 @@ class _LoginState extends State<Login> {
   void checkAlreadyLogin() async {
     loginData = await SharedPreferences.getInstance();
     newuser = (loginData.getBool('login') ?? true);
-    print(newuser);
+    // print(newuser);
     if (newuser == false) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
     }
