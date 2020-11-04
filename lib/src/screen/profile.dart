@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:practica2/src/assets/configuration.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:practica2/src/database/database_helper.dart';
+import 'package:practica2/src/models/userDao.dart';
 
 class Profile extends StatefulWidget {
   Profile({Key key}) : super(key: key);
@@ -12,6 +14,17 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+
+  DataBaseHelper _database;
+  final picker = ImagePicker();
+  String imagePath = "";
+
+  @override
+    void initState() {
+      super.initState();
+      _database = DataBaseHelper();
+    }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -27,12 +40,13 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget profileView() {
-    TextEditingController nameController = TextEditingController()..text = 'Gerardo Almanza';
+    TextEditingController nameController = TextEditingController()..text = 'Gerardo';
     TextEditingController emailController = TextEditingController()..text = '15030141@itcelaya.edu.mx';
     TextEditingController telController = TextEditingController()..text = '4111525280';
+    TextEditingController apController = TextEditingController()..text = 'Almanza';
+    TextEditingController amController = TextEditingController()..text = 'V';
 
-    final picker = ImagePicker();
-    String imagePath = "";
+    
   
 
     final txtName = TextFormField(
@@ -128,7 +142,15 @@ class _ProfileState extends State<Profile> {
         ],
       ),     
       onPressed: (){
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
+        UserDAO user = UserDAO(
+          nomUser: nameController.text,
+          apepUser: apController.text,
+          apemUser: amController.text,
+          telUser: telController.text,
+          emailUser: emailController.text,
+          foto: imagePath
+        );
+        _database.insertar(user.toJSON(), 'tbl_perfil');
       }
     );
 
@@ -152,7 +174,8 @@ class _ProfileState extends State<Profile> {
       ),
       onPressed: () async{
         final pickedFile = await picker.getImage(source: ImageSource.camera);
-        imagePath = pickedFile.path;
+        imagePath = pickedFile != null ? pickedFile.path : "";
+        print(imagePath);
         setState(() {
           
         });
@@ -160,16 +183,8 @@ class _ProfileState extends State<Profile> {
     );
     
     final imgFinal = imagePath == "" 
-      ? CircleAvatar(
-          radius: 70,
-          backgroundImage: NetworkImage('https://villasmilindovillas.com/wp-content/uploads/2020/01/Profile.png'),
-        )
-      : ClipOval(
-          child: Image.file(
-            File(imagePath),
-            fit: BoxFit.cover
-          )
-        );
+      ? CircleAvatar(radius: 70, backgroundImage: NetworkImage('https://villasmilindovillas.com/wp-content/uploads/2020/01/Profile.png'))
+      : CircleAvatar(radius: 70, backgroundImage: AssetImage(imagePath));
     return Column(
       
       children: <Widget>[
