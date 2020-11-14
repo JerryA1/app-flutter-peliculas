@@ -99,7 +99,7 @@ class _LoginState extends State<Login> {
               print('No stay login');
               loginData.setBool('login', true);
             }
-            loginData.setString('username', txtUserController.text);
+            loginData.setString('useremail', txtUserController.text);
             loginData.setString('token', token);
             Navigator.push(context, MaterialPageRoute(builder: (context) => Dashboard()));
           } else{

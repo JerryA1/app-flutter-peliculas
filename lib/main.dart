@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:practica2/src/screen/dashboard.dart';
 import 'package:practica2/src/screen/favorites.dart';
 import 'package:practica2/src/screen/login.dart';
 import 'package:practica2/src/screen/profile.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
         '/favorites': (BuildContext context) => Favorites(),
         '/profile': (BuildContext context) => Profile(),
         '/login': (BuildContext context) => Login(),
+        '/dashboard': (BuildContext context) => Dashboard(),
       },
       home: Login(),
     );

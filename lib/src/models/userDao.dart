@@ -29,6 +29,13 @@ class UserDAO{
 
   Map<String, dynamic> toJSON(){
     return {
+      "id": id,
+      "nomUser": nomUser,
+      "apepUser": apepUser,
+      "apemUser": apemUser,
+      "telUser": telUser,
+      "emailUser": emailUser,
+      "foto": foto,
       "username": username,
       "pwduser": pwduser
     };

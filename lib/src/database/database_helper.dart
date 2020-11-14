@@ -28,7 +28,7 @@ class DataBaseHelper {
   }
 
   _crearTablas(Database db, int version) async{
-    await db.execute("CREATE TABLE tbl_perfil(id INTEGER PRIMARY, nomUser varchar(25), apepUser varchar(25), apemUser varchar(25), telUser char(10), emailUser varchar(30), foto varchar(255), username varchar(30), pwduser varchar(30))");
+    await db.execute("CREATE TABLE tbl_perfil(id INTEGER PRIMARY KEY, nomUser varchar(25), apepUser varchar(25), apemUser varchar(25), telUser char(10), emailUser varchar(30), foto varchar(255), username varchar(30), pwduser varchar(30))");
 
   }
 
@@ -51,6 +51,8 @@ class DataBaseHelper {
     var dbClient = await database;
     var result = await dbClient.query('tbl_perfil', where: 'emailUser = ?', whereArgs: [email]);
     var lista = (result).map((item) => UserDAO.fromJSON(item)).toList();
-    return lista[0];
+    return lista.length > 0
+      ? lista[0]
+      : null;
   }
 }

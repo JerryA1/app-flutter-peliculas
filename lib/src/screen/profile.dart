@@ -5,6 +5,8 @@ import 'package:practica2/src/assets/configuration.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:practica2/src/database/database_helper.dart';
 import 'package:practica2/src/models/userDao.dart';
+import 'package:practica2/src/screen/dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profile extends StatefulWidget {
   Profile({Key key}) : super(key: key);
@@ -14,16 +16,26 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  SharedPreferences loginData;
+  String emailDataLogin;
 
   DataBaseHelper _database;
   final picker = ImagePicker();
   String imagePath = "";
 
   @override
-    void initState() {
-      super.initState();
-      _database = DataBaseHelper();
-    }
+  void initState() {
+    super.initState();
+    initial();
+    _database = DataBaseHelper();
+  }
+  
+  void initial() async {
+    loginData = await SharedPreferences.getInstance();
+    setState(() {
+      emailDataLogin = loginData.getString('useremail');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +52,16 @@ class _ProfileState extends State<Profile> {
   }
 
   Widget profileView() {
-    TextEditingController nameController = TextEditingController()..text = 'Gerardo';
-    TextEditingController emailController = TextEditingController()..text = '15030141@itcelaya.edu.mx';
-    TextEditingController telController = TextEditingController()..text = '4111525280';
-    TextEditingController apController = TextEditingController()..text = 'Almanza';
-    TextEditingController amController = TextEditingController()..text = 'V';
-
-    
-  
+    TextEditingController nameController = TextEditingController()..text = '';
+    TextEditingController emailController = TextEditingController()..text = '$emailDataLogin';
+    TextEditingController telController = TextEditingController()..text = '';
+    TextEditingController apController = TextEditingController()..text = '';
+    TextEditingController amController = TextEditingController()..text = '';
+    bool _isEnable = false;
+    Future<UserDAO> _objUser = _database.getUsuario(emailDataLogin);
 
     final txtName = TextFormField(
-      keyboardType: TextInputType.emailAddress,
+      keyboardType: TextInputType.text,
       cursorColor: Colors.white,
       style: TextStyle(fontSize: 16.0, color: Color(0xFFbdc6cf)),
       controller: nameController,
@@ -71,9 +82,54 @@ class _ProfileState extends State<Profile> {
       ),
     );
 
+    final txtAp = TextFormField(
+      keyboardType: TextInputType.text,
+      cursorColor: Colors.white,
+      style: TextStyle(fontSize: 16.0, color: Color(0xFFbdc6cf)),
+      controller: apController,
+      decoration: InputDecoration(
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.greenAccent, width: 1.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white, width: 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        labelText: 'Appelido paterno',
+        hintText: 'Primer apellido',
+        labelStyle: TextStyle(
+          color: Colors.white
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(20, 5, 20, 4)
+      ),
+    );
+
+    final txtAm = TextFormField(
+      keyboardType: TextInputType.text,
+      cursorColor: Colors.white,
+      style: TextStyle(fontSize: 16.0, color: Color(0xFFbdc6cf)),
+      controller: amController,
+      decoration: InputDecoration(
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.greenAccent, width: 1.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white, width: 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        labelText: 'Apellido materno',
+        hintText: 'Segundo apellido',
+        labelStyle: TextStyle(
+          color: Colors.white
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(20, 5, 20, 4)
+      ),
+    );
+
     final txtEmail = TextFormField(
       keyboardType: TextInputType.emailAddress,
       cursorColor: Colors.white,
+      enabled: _isEnable,
       style: TextStyle(fontSize: 16.0, color: Color(0xFFbdc6cf)),
       controller: emailController,
       decoration: InputDecoration(
@@ -94,7 +150,7 @@ class _ProfileState extends State<Profile> {
     );
 
     final txtTel = TextFormField(
-      keyboardType: TextInputType.emailAddress,
+      keyboardType: TextInputType.number,
       cursorColor: Colors.white,
       style: TextStyle(fontSize: 16.0, color: Color(0xFFbdc6cf)),
       controller: telController,
@@ -142,15 +198,48 @@ class _ProfileState extends State<Profile> {
         ],
       ),     
       onPressed: (){
-        UserDAO user = UserDAO(
-          nomUser: nameController.text,
-          apepUser: apController.text,
-          apemUser: amController.text,
-          telUser: telController.text,
-          emailUser: emailController.text,
-          foto: imagePath
+        _objUser.then((result) {
+          //print(result.id);
+          if (result != null) {
+            print('Actualizar');
+            UserDAO user = UserDAO(
+              id: result.id,
+              nomUser: nameController.text,
+              apepUser: apController.text,
+              apemUser: amController.text,
+              telUser: telController.text,
+              emailUser: emailController.text,
+              foto: imagePath
+            );
+            _database.actualizar(user.toJSON(), 'tbl_perfil').then((rows) => {
+              print('$rows')
+            });
+          } else{
+            print('Insertar');
+            UserDAO user = UserDAO(
+              nomUser: nameController.text,
+              apepUser: apController.text,
+              apemUser: amController.text,
+              telUser: telController.text,
+              emailUser: emailController.text,
+              foto: imagePath
+            );
+            _database.insertar(user.toJSON(), 'tbl_perfil').then((rows) => {
+              print('$rows')
+            });
+          }
+          setState(() {
+            
+          });
+        });
+
+        Navigator.pushAndRemoveUntil(
+          context, 
+          MaterialPageRoute(builder: (BuildContext context) => Dashboard()), 
+          ModalRoute.withName('/login')
         );
-        _database.insertar(user.toJSON(), 'tbl_perfil');
+        
+        print('Guardar perfil');
       }
     );
 
@@ -184,65 +273,127 @@ class _ProfileState extends State<Profile> {
     
     final imgFinal = imagePath == "" 
       ? CircleAvatar(radius: 70, backgroundImage: NetworkImage('https://villasmilindovillas.com/wp-content/uploads/2020/01/Profile.png'))
-      : CircleAvatar(radius: 70, backgroundImage: AssetImage(imagePath));
-    return Column(
-      
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.fromLTRB(30, 50, 30, 30),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              // Container(height: 50, width: 50 ,child: Icon(Icons.arrow_back_ios, size: 24,color: Colors.black54,), decoration: BoxDecoration(border: Border.all(color: Colors.black54), borderRadius: BorderRadius.all(Radius.circular(10))),),
-              Text('Profiles details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
-              Container(height: 24,width: 24)
-            ],
+      : ClipOval(child: Image.file(File(imagePath), fit: BoxFit.cover, width: 130,),);
+    var _avatarPic = imgFinal;
+    return FutureBuilder(
+      future: _objUser,
+       builder: (BuildContext context, AsyncSnapshot<UserDAO> snapshot){
+        final _newValueName = snapshot.data == null
+        ? ''
+        : snapshot.data.nomUser;
+        nameController.value = TextEditingValue(
+          text: _newValueName,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: _newValueName.length),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0,0 ,50),
-          child: Stack(
-            children: <Widget>[
-              imgFinal,
-              Positioned(bottom: 1, right: 1 ,child: Container(
-                height: 40, width: 40,
-                child: photoBtn,
-              ))
-            ],
+        );
+
+        final _newValueAp = snapshot.data == null
+        ? ''
+        : snapshot.data.apepUser;
+        apController.value = TextEditingValue(
+          text: _newValueAp,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: _newValueAp.length),
           ),
-        ),
-        Expanded(child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-            color: Configuration.colorBackProfile
+        );
+
+        final _newValueAm = snapshot.data == null
+        ? ''
+        : snapshot.data.apemUser;
+        amController.value = TextEditingValue(
+          text: _newValueAm,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: _newValueAm.length),
           ),
-          child: Column(
-            children: <Widget>[              
-               Card(
-                color: Configuration.colorBackProfile,
-                margin: EdgeInsets.all(30.0),
-                elevation: 0,
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: ListView(
-                      shrinkWrap: true,
-                      children: <Widget>[
-                        SizedBox(height: 25,),
-                        txtName,
-                        SizedBox(height: 26,),
-                        txtEmail,
-                        SizedBox(height: 26,),
-                        txtTel,
-                        SizedBox(height: 45,),
-                        saveBtn
-                      ],
+        );
+
+        final _newValueTel = snapshot.data == null
+        ? ''
+        : snapshot.data.telUser;
+        telController.value = TextEditingValue(
+          text: _newValueTel,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: _newValueTel.length),
+          ),
+        );
+
+        // print(imagePath);
+        
+        if (snapshot.data != null && imagePath == "") {
+          _avatarPic = ClipOval(child: Image.file(File(snapshot.data.foto), fit: BoxFit.cover, width: 130,));
+          imagePath = snapshot.data.foto;
+        }
+
+       
+        return Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.fromLTRB(30, 50, 30, 30),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                // Container(height: 50, width: 50 ,child: Icon(Icons.arrow_back_ios, size: 24,color: Colors.black54,), decoration: BoxDecoration(border: Border.all(color: Colors.black54), borderRadius: BorderRadius.all(Radius.circular(10))),),
+                Text('Profiles details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                Container(height: 24,width: 24)
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 180,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0,0 ,50),
+              child: Stack(
+                children: <Widget>[
+                  _avatarPic,
+                  Positioned(bottom: 1, right: 1 ,child: Container(
+                    height: 40, width: 40,
+                    child: photoBtn,
+                  ))
+                ],
+              ),
+            ),
+          ),
+          Expanded(child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              color: Configuration.colorBackProfile
+            ),
+            child: Column(
+              children: <Widget>[              
+                 Expanded(
+                  child: Card(
+                    color: Configuration.colorBackProfile,
+                    margin: EdgeInsets.all(20.0),
+                    elevation: 0,
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: ListView(
+                          shrinkWrap: true,
+                          children: <Widget>[
+                            SizedBox(height: 5,),
+                            txtName,
+                            SizedBox(height: 26,),
+                            txtAp,
+                            SizedBox(height: 26,),
+                            txtAm,
+                            SizedBox(height: 26,),
+                            txtEmail,
+                            SizedBox(height: 26,),
+                            txtTel,
+                            SizedBox(height: 35,),
+                            saveBtn
+                          ],
+                      ),
+                    ),
                   ),
-                ),
-              ),              
-            ],
-          ),
-        ))
-      ],
+                ),              
+              ],
+            ),
+          ))
+        ],
+      );
+      }
     );
   }
 }
