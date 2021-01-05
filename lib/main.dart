@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:practica2/src/screen/dashboard.dart';
+import 'package:practica2/src/screen/detail_movie.dart';
 import 'package:practica2/src/screen/favorites.dart';
 import 'package:practica2/src/screen/login.dart';
 import 'package:practica2/src/screen/profile.dart';
 import 'package:practica2/src/screen/search.dart';
+import 'package:practica2/src/screen/splashscreen.dart';
 import 'package:practica2/src/screen/trending.dart';
 
 void main() {
@@ -23,8 +25,9 @@ class MyApp extends StatelessWidget {
         '/profile': (BuildContext context) => Profile(),
         '/login': (BuildContext context) => Login(),
         '/dashboard': (BuildContext context) => Dashboard(),
+        '/detail': (BuildContext context) => DetailMovie()
       },
-      home: Login(),
+      home: Splashscreen(),
     );
   }
 }
